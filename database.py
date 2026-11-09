@@ -16,7 +16,9 @@ DB_PORT = int(os.getenv("SMART_PARKING_DB_PORT", "3306"))
 DB_USER = os.getenv("SMART_PARKING_DB_USER", "root")
 DB_PASSWORD = os.getenv("SMART_PARKING_DB_PASSWORD", "")
 DB_NAME = os.getenv("SMART_PARKING_DB_NAME", "smart_parking")
-USE_MYSQL = os.getenv("SMART_PARKING_USE_MYSQL", "true").lower() in ("1", "true", "yes")
+
+# Force SQLite by default unless an external cloud MySQL is explicitly provided
+USE_MYSQL = os.getenv("SMART_PARKING_USE_MYSQL", "false").lower() in ("1", "true", "yes")
 
 SQLITE_PATH = ROOT_DIR / "smart_parking.db"
 
