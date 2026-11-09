@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}Worker Dashboard – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="layout">
+    {% include "partials/worker_sidebar.html" %}
+
+    <main class="main-content">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1>Worker Dashboard</h1>
+                {% if lot %}
+                <p>Facility: <strong style="color: var(--blue-700);">{{ lot.lot_name }}</strong> &bull; Location: <strong style="color: var(--slate-700);">{{ lot.location }}</strong></p>
+                {% else %}
+                <p>Live slot availability and daily parking operations</p>
+                {% endif %}
+            </div>
+            <div style="display: flex; gap: 0.8rem;">
+                <a href="{{ url_for('vehicle_entry') }}" class="btn btn-primary" style="font-size: 0.9rem;">
+                    🚗 New Vehicle Entry
+                </a>
+                <a href="{{ url_for('vehicle_exit') }}" class="btn btn-success" style="font-size: 0.9rem;">
+                    🚙 Process Exit
+                </a>
+            </div>
+        </div>
+
+        <!-- 4 Clear Key Metrics -->
+        <div class="stat-grid">
+            <!-- Car Slots Card -->
+            <div class="stat-card" style="border-top: 4px solid var(--blue-600);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="label">🚗 Car Slots Left</div>
+                    {% if stats.car_available == 0 %}
+                    <span class="badge badge-occupied">FULL</span>
+                    {% else %}
+                    <span class="badge badge-available">{{ stats.car_available }} OPEN</span>
+                    {% endif %}
+                </div>
+                <div class="value {% if stats.car_available == 0 %}red{% else %}blue{% endif %}" style="margin-top: 0.5rem;">
+                    {{ stats.car_available }} <span style="font-size: 1rem; font-weight: 500; color: var(--slate-500);">/ {{ stats.car_total }}</span>
+                </div>
+                <div style="margin-top: 0.4rem; font-size: 0.82rem; color: var(--slate-500); display: flex; justify-content: space-between;">
+                    <span>Occupied: <strong>{{ stats.car_occupied }}</strong></span>
+                    <span>Remaining: <strong>{{ stats.car_available }}</strong></span>
+                </div>
+            </div>
+
+            <!-- Bike Slots Card -->
+            <div class="stat-card" style="border-top: 4px solid var(--green-600);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="label">🏍️ Bike Slots Left</div>
+                    {% if stats.bike_available == 0 %}
+                    <span class="badge badge-occupied">FULL</span>
+                    {% else %}
+                    <span class="badge badge-available">{{ stats.bike_available }} OPEN</span>
+                    {% endif %}
+                </div>
+                <div class="value {% if stats.bike_available == 0 %}red{% else %}green{% endif %}" style="margin-top: 0.5rem;">
+                    {{ stats.bike_available }} <span style="font-size: 1rem; font-weight: 500; color: var(--slate-500);">/ {{ stats.bike_total }}</span>
+                </div>
+                <div style="margin-top: 0.4rem; font-size: 0.82rem; color: var(--slate-500); display: flex; justify-content: space-between;">
+                    <span>Occupied: <strong>{{ stats.bike_occupied }}</strong></span>
+                    <span>Remaining: <strong>{{ stats.bike_available }}</strong></span>
+                </div>
+            </div>
+
+            <!-- Combined Free Spaces -->
+            <div class="stat-card" style="border-top: 4px solid var(--amber-500);">
+                <div class="label">🅿️ Total Free Slots</div>
+                <div class="value amber" style="margin-top: 0.5rem;">
+                    {{ stats.free_slots }} <span style="font-size: 1rem; font-weight: 500; color: var(--slate-500);">/ {{ stats.total_slots }}</span>
+                </div>
+                <div style="margin-top: 0.4rem; font-size: 0.82rem; color: var(--slate-500);">
+                    Total Empty Spaces Available Now
+                </div>
+            </div>
+
+            <!-- Currently Parked -->
+            <div class="stat-card" style="border-top: 4px solid var(--red-600);">
+                <div class="label">🚘 Total Parked</div>
+                <div class="value red" style="margin-top: 0.5rem;">
+                    {{ stats.parked }}
+                </div>
+                <div style="margin-top: 0.4rem; font-size: 0.82rem; color: var(--slate-500);">
+                    {{ stats.car_occupied }} Cars &bull; {{ stats.bike_occupied }} Bikes
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Visual Slot Map Card -->
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📍 Live Slot Status Map</span>
+                    <span style="font-size: 0.8rem; color: var(--slate-500); font-weight: normal;">(Instant visual of every slot)</span>
+                </div>
+                <div style="display: flex; gap: 1rem; font-size: 0.8rem; font-weight: 600;">
+                    <span style="display: flex; align-items: center; gap: 0.3rem;"><span style="width: 12px; height: 12px; background: #86efac; border: 1px solid #16a34a; border-radius: 3px;"></span> Available (Green)</span>
+                    <span style="display: flex; align-items: center; gap: 0.3rem;"><span style="width: 12px; height: 12px; background: #fca5a5; border: 1px solid #dc2626; border-radius: 3px;"></span> Occupied / Filled (Red)</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Cars section -->
+                <div style="margin-bottom: 1.2rem;">
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--slate-700); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span>🚗 CAR SLOTS ({{ stats.car_available }} Free / {{ stats.car_total }} Total):</span>
+                        {% if stats.car_available == 0 %}
+                        <span style="color: #dc2626; font-size: 0.75rem;">NO CAR SLOTS AVAILABLE</span>
+                        {% else %}
+                        <span style="color: #16a34a; font-size: 0.75rem;">{{ stats.car_available }} SLOTS READY FOR PARKING</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem;">
+                        {% for s in slots %}
+                            {% if s.slot_type == 'CAR' %}
+                                <div class="slot-cell {% if s.occupancy_status == 'OCCUPIED' %}occupied{% else %}available{% endif %}" style="min-width: 80px; padding: 0.5rem 0.8rem;">
+                                    <strong>{{ s.slot_number }}</strong>
+                                    <span class="slot-label" style="font-weight: 600; font-size: 0.72rem;">
+                                        {% if s.occupancy_status == 'OCCUPIED' %}FILLED{% else %}EMPTY{% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% if stats.car_total == 0 %}
+                            <span style="color: var(--slate-400); font-size: 0.85rem;">No car slots configured.</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Bikes section -->
+                <div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--slate-700); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span>🏍️ BIKE SLOTS ({{ stats.bike_available }} Free / {{ stats.bike_total }} Total):</span>
+                        {% if stats.bike_available == 0 %}
+                        <span style="color: #dc2626; font-size: 0.75rem;">NO BIKE SLOTS AVAILABLE</span>
+                        {% else %}
+                        <span style="color: #16a34a; font-size: 0.75rem;">{{ stats.bike_available }} SLOTS READY FOR PARKING</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem;">
+                        {% for s in slots %}
+                            {% if s.slot_type == 'BIKE' %}
+                                <div class="slot-cell {% if s.occupancy_status == 'OCCUPIED' %}occupied{% else %}available{% endif %}" style="min-width: 80px; padding: 0.5rem 0.8rem;">
+                                    <strong>{{ s.slot_number }}</strong>
+                                    <span class="slot-label" style="font-weight: 600; font-size: 0.72rem;">
+                                        {% if s.occupancy_status == 'OCCUPIED' %}FILLED{% else %}EMPTY{% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% if stats.bike_total == 0 %}
+                            <span style="color: var(--slate-400); font-size: 0.85rem;">No bike slots configured.</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Breakdown & Recent Activity -->
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">Capacity & Remaining Summary</div>
+                <div class="card-body">
+                    <!-- Cars row -->
+                    <div style="padding: 0.8rem 0; border-bottom: 1px solid var(--slate-100);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                            <strong>🚗 Car Slots</strong>
+                            <span><strong>{{ stats.car_available }} Left</strong> ({{ stats.car_occupied }} Filled of {{ stats.car_total }})</span>
+                        </div>
+                        <div style="background: var(--slate-200); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: var(--blue-600); height: 100%; width: {{ (stats.car_occupied / stats.car_total * 100) if stats.car_total > 0 else 0 }}%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Bikes row -->
+                    <div style="padding: 0.8rem 0; border-bottom: 1px solid var(--slate-100);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                            <strong>🏍️ Bike Slots</strong>
+                            <span><strong>{{ stats.bike_available }} Left</strong> ({{ stats.bike_occupied }} Filled of {{ stats.bike_total }})</span>
+                        </div>
+                        <div style="background: var(--slate-200); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: var(--green-600); height: 100%; width: {{ (stats.bike_occupied / stats.bike_total * 100) if stats.bike_total > 0 else 0 }}%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Total row -->
+                    <div style="padding: 0.8rem 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                            <strong>🅿️ Overall Parking Lot</strong>
+                            <span><strong>{{ stats.free_slots }} Total Free</strong> ({{ stats.parked }} Filled of {{ stats.total_slots }})</span>
+                        </div>
+                        <div style="background: var(--slate-200); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: var(--amber-500); height: 100%; width: {{ (stats.parked / stats.total_slots * 100) if stats.total_slots > 0 else 0 }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Recent Parking Activity</div>
+                <div class="card-body">
+                    {% if recent %}
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>Vehicle</th>
+                                    <th>Status</th>
+                                    <th>Entry</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in recent %}
+                                <tr>
+                                    <td><strong>{{ r.ticket_id }}</strong></td>
+                                    <td>{{ r.vehicle_number }}</td>
+                                    <td>
+                                        <span class="badge {% if r.parking_status == 'ACTIVE' %}badge-active{% else %}badge-completed{% endif %}">
+                                            {{ r.parking_status }}
+                                        </span>
+                                    </td>
+                                    <td><small>{{ r.entry_time }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p style="color: var(--slate-500); text-align: center; padding: 1.5rem;">No recent vehicle activity yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

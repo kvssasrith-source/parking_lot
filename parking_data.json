@@ -1,0 +1,160 @@
+{
+  "lot_name": "City Smart Parking",
+  "location": "Main Market",
+  "car_rate": 30.0,
+  "bike_rate": 15.0,
+  "next_ticket_number": 1,
+  "slots": [
+    {
+      "slot_id": 1,
+      "slot_number": "C-01",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 2,
+      "slot_number": "C-02",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 3,
+      "slot_number": "C-03",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 4,
+      "slot_number": "C-04",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 5,
+      "slot_number": "C-05",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 6,
+      "slot_number": "C-06",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 7,
+      "slot_number": "C-07",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 8,
+      "slot_number": "C-08",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 9,
+      "slot_number": "C-09",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 10,
+      "slot_number": "C-10",
+      "slot_type": "CAR",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 11,
+      "slot_number": "B-01",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 12,
+      "slot_number": "B-02",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 13,
+      "slot_number": "B-03",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 14,
+      "slot_number": "B-04",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 15,
+      "slot_number": "B-05",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 16,
+      "slot_number": "B-06",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 17,
+      "slot_number": "B-07",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 18,
+      "slot_number": "B-08",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 19,
+      "slot_number": "B-09",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 20,
+      "slot_number": "B-10",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 21,
+      "slot_number": "B-11",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 22,
+      "slot_number": "B-12",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 23,
+      "slot_number": "B-13",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 24,
+      "slot_number": "B-14",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    },
+    {
+      "slot_id": 25,
+      "slot_number": "B-15",
+      "slot_type": "BIKE",
+      "occupancy_status": "AVAILABLE"
+    }
+  ],
+  "tickets": []
+}

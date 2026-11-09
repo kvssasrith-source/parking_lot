@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Parking History – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="layout">
+    {% if session.role == 'ADMIN' %}
+        {% include "partials/admin_sidebar.html" %}
+    {% else %}
+        {% include "partials/worker_sidebar.html" %}
+    {% endif %}
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Parking History</h1>
+            <p>Recent vehicle entry, exit, and printable slip/receipt records</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Activity Log (Latest 30 Records)</div>
+            <div class="card-body">
+                {% if records %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Vehicle Number</th>
+                                <th>Owner Name</th>
+                                <th>Slot</th>
+                                <th>Status</th>
+                                <th>Entry Time</th>
+                                <th>Exit Time</th>
+                                <th>Slip / Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td><strong>{{ record.ticket_id }}</strong></td>
+                                <td>{{ record.vehicle_number }}</td>
+                                <td>{{ record.owner_name }}</td>
+                                <td>{{ record.slot_number }}</td>
+                                <td>
+                                    <span class="badge {% if record.parking_status == 'ACTIVE' %}badge-active{% elif record.parking_status == 'COMPLETED' %}badge-completed{% else %}badge-no{% endif %}">
+                                        {{ record.parking_status }}
+                                    </span>
+                                </td>
+                                <td><small>{{ record.entry_time }}</small></td>
+                                <td><small>{{ record.exit_time if record.exit_time else '-' }}</small></td>
+                                <td>
+                                    {% if record.parking_status == 'ACTIVE' %}
+                                    <a href="{{ url_for('entry_slip', ticket_id=record.ticket_id, download=1) }}" class="btn btn-primary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" title="Download Parking Slip">
+                                        📥 Slip
+                                    </a>
+                                    <a href="{{ url_for('entry_slip', ticket_id=record.ticket_id) }}" target="_blank" class="btn" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; background: var(--slate-100);" title="Print Parking Slip">
+                                        🖨️
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ url_for('exit_receipt', ticket_id=record.ticket_id, download=1) }}" class="btn btn-success" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" title="Download Exit Receipt">
+                                        📥 Receipt
+                                    </a>
+                                    <a href="{{ url_for('exit_receipt', ticket_id=record.ticket_id) }}" target="_blank" class="btn" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; background: var(--slate-100);" title="Print Receipt">
+                                        🖨️
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p style="color: var(--slate-500); text-align: center; padding: 2rem;">No parking records found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Parking Setup – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="layout">
+    {% include "partials/admin_sidebar.html" %}
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Parking Lot Configuration</h1>
+            <p>Modify and update your facility settings, slots, and hourly rates</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="grid-2">
+            <!-- Modification Form -->
+            <div class="card">
+                <div class="card-header">Edit Parking Facility</div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('parking_setup') }}">
+                        <div class="form-group">
+                            <label for="lot_name">Facility Name</label>
+                            <input type="text" id="lot_name" name="lot_name" value="{{ lot.lot_name }}" placeholder="e.g. City Parking" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ lot.location }}" placeholder="e.g. Main Market, Indore" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="car_capacity">Car Capacity (Slots)</label>
+                                <input type="number" id="car_capacity" name="car_capacity" value="{{ lot.car_capacity }}" min="0" max="500" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bike_capacity">Bike Capacity (Slots)</label>
+                                <input type="number" id="bike_capacity" name="bike_capacity" value="{{ lot.bike_capacity }}" min="0" max="500" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="car_rate">Car Rate (₹/hr)</label>
+                                <input type="number" id="car_rate" name="car_rate" value="{{ lot.car_rate }}" min="1" step="0.5" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bike_rate">Bike Rate (₹/hr)</label>
+                                <input type="number" id="bike_rate" name="bike_rate" value="{{ lot.bike_rate }}" min="1" step="0.5" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top: 1rem;">
+                            Update Parking Facility
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Current Summary Card -->
+            <div class="card">
+                <div class="card-header">Current Active Facility Settings</div>
+                <div class="card-body">
+                    <div class="report-section">
+                        <div class="report-row">
+                            <span class="report-label">Facility Name</span>
+                            <span class="report-value"><strong>{{ lot.lot_name }}</strong></span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Location</span>
+                            <span class="report-value">{{ lot.location }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Configured Car Slots</span>
+                            <span class="report-value" style="color: var(--blue-600); font-weight: 700;">{{ lot.car_capacity }} Slots (C-01 to C-{{ '%02d'|format(lot.car_capacity) }})</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Configured Bike Slots</span>
+                            <span class="report-value" style="color: var(--green-600); font-weight: 700;">{{ lot.bike_capacity }} Slots (B-01 to B-{{ '%02d'|format(lot.bike_capacity) }})</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Car Hourly Rate</span>
+                            <span class="report-value">₹{{ lot.car_rate }} / hr</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Bike Hourly Rate</span>
+                            <span class="report-value">₹{{ lot.bike_rate }} / hr</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: var(--slate-50); border-radius: 8px; border: 1px solid var(--slate-200); font-size: 0.85rem; color: var(--slate-600);">
+                        💡 <strong>Note:</strong> Modifying slot counts will immediately update the slot layout in <a href="{{ url_for('slot_management') }}" style="color: var(--blue-600); font-weight: 600;">Slot Management</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

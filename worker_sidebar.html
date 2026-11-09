@@ -1,0 +1,26 @@
+<!-- Reusable sidebar partial for worker pages -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <h2>🅿️ SMART PARKING</h2>
+        <p class="user-info">Attendant: {{ session.full_name }}</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('worker_dashboard') }}" class="{% if request.endpoint == 'worker_dashboard' %}active{% endif %}">
+            <span class="icon">📊</span><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('vehicle_entry') }}" class="{% if request.endpoint == 'vehicle_entry' %}active{% endif %}">
+            <span class="icon">🚗</span><span>Vehicle Entry</span>
+        </a>
+        <a href="{{ url_for('vehicle_exit') }}" class="{% if request.endpoint in ('vehicle_exit', 'vehicle_exit_search', 'vehicle_exit_process') %}active{% endif %}">
+            <span class="icon">🚙</span><span>Vehicle Exit</span>
+        </a>
+        <a href="{{ url_for('parking_history') }}" class="{% if request.endpoint == 'parking_history' %}active{% endif %}">
+            <span class="icon">📋</span><span>Parking History</span>
+        </a>
+        <div class="divider"></div>
+        <a href="{{ url_for('logout') }}">
+            <span class="icon">🚪</span><span>Logout</span>
+        </a>
+    </nav>
+</aside>
+

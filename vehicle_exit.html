@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Vehicle Exit – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="layout">
+    {% include "partials/worker_sidebar.html" %}
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Vehicle Exit</h1>
+            <p>Search for a parked vehicle and process the exit</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Search Parking Record</div>
+            <div class="card-body">
+                <div class="search-bar">
+                    <div class="form-group">
+                        <label for="search_value">Ticket ID or Vehicle Number</label>
+                        <input type="text" id="search_value" placeholder="e.g. P0001 or MH12AB1234">
+                    </div>
+                    <button class="btn btn-primary" onclick="searchRecord()" style="margin-bottom:0; height:42px;">Find Record</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Record details (filled by JS) -->
+        <div class="card" id="exit-record-card" style="display:none;">
+            <div class="card-header">Parking Record Details</div>
+            <div class="card-body" id="exit-record-details"></div>
+        </div>
+
+        <!-- Payment + process -->
+        <div class="card" id="exit-action-card" style="display:none;">
+            <div class="card-header">Process Exit</div>
+            <div class="card-body" style="display:flex; gap:1rem; align-items:flex-end;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label for="payment_method">Payment Method</label>
+                    <select id="payment_method">
+                        <option value="CASH" selected>Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="CARD">Card</option>
+                    </select>
+                </div>
+                <button class="btn btn-success btn-lg" onclick="processExit()">Process Exit</button>
+            </div>
+        </div>
+
+        <!-- Success result -->
+        <div class="result-card" id="exit-success" style="display:none;"></div>
+    </main>
+</div>
+
+<script>
+let currentRecord = null;
+
+async function searchRecord() {
+    const val = document.getElementById('search_value').value.trim();
+    if (!val) { alert('Enter ticket ID or vehicle number.'); return; }
+
+    const form = new FormData();
+    form.append('search_value', val);
+
+    try {
+        const res = await fetch('{{ url_for("vehicle_exit_search") }}', { method: 'POST', body: form });
+        const data = await res.json();
+        if (data.error) { alert(data.error); return; }
+
+        currentRecord = data;
+        const html = `
+            <div class="report-row"><span class="report-label">Ticket ID</span><span class="report-value">${data.ticket_id}</span></div>
+            <div class="report-row"><span class="report-label">Vehicle</span><span class="report-value">${data.vehicle_number}</span></div>
+            <div class="report-row"><span class="report-label">Owner</span><span class="report-value">${data.owner_name}</span></div>
+            <div class="report-row"><span class="report-label">Type</span><span class="report-value">${data.vehicle_type}</span></div>
+            <div class="report-row"><span class="report-label">Slot</span><span class="report-value">${data.slot_number}</span></div>
+            <div class="report-row"><span class="report-label">Entry Time</span><span class="report-value">${data.entry_time}</span></div>
+            <div class="report-row"><span class="report-label">Rate</span><span class="report-value">₹${data.hourly_rate}/hour</span></div>
+        `;
+        document.getElementById('exit-record-details').innerHTML = html;
+        document.getElementById('exit-record-card').style.display = 'block';
+        document.getElementById('exit-action-card').style.display = 'block';
+        document.getElementById('exit-success').style.display = 'none';
+    } catch (err) {
+        alert('Search failed: ' + err.message);
+    }
+}
+
+async function processExit() {
+    if (!currentRecord) { alert('Find a parking record first.'); return; }
+
+    const payload = {
+        record_id: currentRecord.record_id,
+        payment_method: document.getElementById('payment_method').value,
+        entry_time: currentRecord.entry_time,
+        hourly_rate: currentRecord.hourly_rate,
+    };
+
+    try {
+        const res = await fetch('{{ url_for("vehicle_exit_process") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.error) { alert(data.error); return; }
+
+        document.getElementById('exit-record-card').style.display = 'none';
+        document.getElementById('exit-action-card').style.display = 'none';
+
+        const ticketId = data.ticket_id || currentRecord.ticket_id;
+        document.getElementById('exit-success').innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid #bbf7d0;">
+                <h3 style="margin-bottom: 0;">✅ Exit Processed Successfully</h3>
+                <div style="display: flex; gap: 0.6rem;">
+                    <a href="/slip/exit/${ticketId}?download=1" class="btn btn-success" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                        📥 Download Receipt (.txt)
+                    </a>
+                    <a href="/slip/exit/${ticketId}" target="_blank" class="btn" style="background: var(--white); border: 1.5px solid var(--slate-300); color: var(--slate-700); padding: 0.45rem 1rem; font-size: 0.85rem;">
+                        🖨️ Print Receipt
+                    </a>
+                </div>
+            </div>
+            <div class="detail-row"><span class="detail-label">Ticket ID</span><span style="font-weight: 700;">${ticketId}</span></div>
+            <div class="detail-row"><span class="detail-label">Exit Time</span><span>${data.exit_time}</span></div>
+            <div class="detail-row"><span class="detail-label">Amount Paid</span><span style="font-weight: 700; color: #166534;">₹${data.amount}</span></div>
+            <div class="detail-row"><span class="detail-label">Payment Method</span><span>${data.payment_method}</span></div>
+            <div class="detail-row"><span class="detail-label">Status</span><span class="badge badge-completed">COMPLETED</span></div>
+        `;
+        document.getElementById('exit-success').style.display = 'block';
+        currentRecord = null;
+    } catch (err) {
+        alert('Exit failed: ' + err.message);
+    }
+}
+</script>
+{% endblock %}
+

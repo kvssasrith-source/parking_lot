@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% block title %}Worker Management – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="layout">
+    {% include "partials/admin_sidebar.html" %}
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Worker Management</h1>
+            <p>Create, manage parking attendants, and securely update passwords</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="grid-2">
+            <!-- Add New Worker Form -->
+            <div class="card">
+                <div class="card-header">Add New Attendant</div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('manage_workers') }}">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" placeholder="e.g. attendant1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="full_name">Full Name</label>
+                            <input type="text" id="full_name" name="full_name" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" placeholder="Create password (min 4 chars)" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1rem;">Add Worker</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- List of Workers -->
+            <div class="card">
+                <div class="card-header">Current Workers</div>
+                <div class="card-body">
+                    {% if workers %}
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for w in workers %}
+                                <tr>
+                                    <td><strong>{{ w.username }}</strong></td>
+                                    <td>{{ w.full_name }}</td>
+                                    <td>
+                                        <span class="badge {% if w.account_status == 'ACTIVE' %}badge-active{% else %}badge-no{% endif %}">
+                                            {{ w.account_status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                            <button class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" onclick="openPasswordModal({{ w.user_id }}, '{{ w.username }}')">
+                                                🔑 Password
+                                            </button>
+                                            <button class="btn" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: #dc2626; color: #ffffff; border: none;" onclick="openRemoveWorkerModal({{ w.user_id }}, '{{ w.username }}')">
+                                                🗑️ Remove Worker
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p style="color: var(--slate-500); text-align: center; padding: 2rem;">No workers found. Add one using the form on the left.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Verification Modal -->
+        <div id="passwordModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center;">
+            <div style="background: var(--white); border-radius: var(--radius); width: 100%; max-width: 440px; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid var(--slate-200); position: relative;">
+                <button onclick="closePasswordModal()" style="position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--slate-400);">&times;</button>
+
+                <h3 style="margin-bottom: 0.3rem; font-size: 1.3rem;">Worker Password</h3>
+                <p id="modalWorkerSubtitle" style="color: var(--slate-500); font-size: 0.88rem; margin-bottom: 1.4rem;">Manage password for worker</p>
+
+                <div id="modalAlert" style="display: none; padding: 0.7rem 0.9rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+                <!-- Step 1: Admin Password Verification -->
+                <div id="stepVerification">
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.2rem; font-size: 0.85rem; color: #1e40af;">
+                        🔒 <strong>Admin Verification:</strong> Enter your admin password to view and change this worker's password.
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminPasswordInput">Your Admin Password</label>
+                        <input type="password" id="adminPasswordInput" placeholder="Enter admin password" style="width: 100%; padding: 0.65rem 0.85rem; border: 1.5px solid var(--slate-300); border-radius: 6px;">
+                    </div>
+
+                    <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+                        <button type="button" class="btn btn-primary" onclick="verifyAdminPassword()" style="flex: 1;" id="verifyBtn">Verify & View Password</button>
+                        <button type="button" class="btn" onclick="closePasswordModal()" style="background: var(--slate-100); color: var(--slate-600);">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: View and Change Password -->
+                <div id="stepPasswordDetails" style="display: none;">
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin-bottom: 1.4rem;">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: #166534; text-transform: uppercase;">Current Worker Password:</span>
+                        <div id="revealedPassword" style="font-family: monospace; font-size: 1.25rem; font-weight: 700; color: #15803d; margin-top: 0.3rem; letter-spacing: 0.5px;"></div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--slate-200); padding-top: 1.2rem;">
+                        <h4 style="font-size: 1rem; margin-bottom: 0.8rem; color: var(--slate-800);">Change Worker's Password</h4>
+
+                        <div class="form-group">
+                            <label for="newWorkerPasswordInput">New Password</label>
+                            <input type="text" id="newWorkerPasswordInput" placeholder="Enter new password (min 4 chars)" style="width: 100%; padding: 0.65rem 0.85rem; border: 1.5px solid var(--slate-300); border-radius: 6px;">
+                        </div>
+
+                        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+                            <button type="button" class="btn btn-success" onclick="saveNewPassword()" style="flex: 1;" id="savePassBtn">Save New Password</button>
+                            <button type="button" class="btn" onclick="closePasswordModal()" style="background: var(--slate-100); color: var(--slate-600);">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remove Worker Modal (Asks for Worker's Password) -->
+        <div id="removeWorkerModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center;">
+            <div style="background: var(--white); border-radius: var(--radius); width: 100%; max-width: 440px; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid var(--slate-200); position: relative;">
+                <button onclick="closeRemoveWorkerModal()" style="position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--slate-400);">&times;</button>
+
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+                    <span style="font-size: 1.4rem;">🗑️</span>
+                    <h3 style="font-size: 1.3rem; margin: 0; color: #b91c1c;">Remove Worker</h3>
+                </div>
+                <p id="removeModalWorkerSubtitle" style="color: var(--slate-500); font-size: 0.88rem; margin-bottom: 1.2rem;">Worker: ...</p>
+
+                <div id="removeModalAlert" style="display: none; padding: 0.7rem 0.9rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.2rem; font-size: 0.85rem; color: #991b1b;">
+                    🔒 <strong>Security Verification:</strong> Enter the <strong>worker's password</strong> to permanently remove this worker.
+                </div>
+
+                <div class="form-group">
+                    <label for="workerPasswordConfirmInput">Worker's Password</label>
+                    <input type="password" id="workerPasswordConfirmInput" placeholder="Enter worker's password" style="width: 100%; padding: 0.65rem 0.85rem; border: 1.5px solid var(--slate-300); border-radius: 6px;">
+                </div>
+
+                <div style="display: flex; gap: 0.8rem; margin-top: 1.4rem;">
+                    <button type="button" class="btn" onclick="confirmRemoveWorker()" style="flex: 1; background: #dc2626; color: white; border: none; font-weight: 600; padding: 0.65rem;" id="confirmRemoveBtn">Confirm & Remove</button>
+                    <button type="button" class="btn" onclick="closeRemoveWorkerModal()" style="background: var(--slate-100); color: var(--slate-600);">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+let activeWorkerId = null;
+let verifiedAdminPassword = '';
+
+function openPasswordModal(workerId, username) {
+    activeWorkerId = workerId;
+    verifiedAdminPassword = '';
+    document.getElementById('modalWorkerSubtitle').innerText = 'Worker: ' + username;
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('newWorkerPasswordInput').value = '';
+    document.getElementById('modalAlert').style.display = 'none';
+
+    document.getElementById('stepVerification').style.display = 'block';
+    document.getElementById('stepPasswordDetails').style.display = 'none';
+    document.getElementById('passwordModal').style.display = 'flex';
+    document.getElementById('adminPasswordInput').focus();
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+    activeWorkerId = null;
+    verifiedAdminPassword = '';
+}
+
+async function verifyAdminPassword() {
+    const adminPass = document.getElementById('adminPasswordInput').value;
+    if (!adminPass) {
+        showModalAlert('Please enter your admin password.', false);
+        return;
+    }
+
+    const btn = document.getElementById('verifyBtn');
+    btn.disabled = true;
+    btn.innerText = 'Verifying...';
+
+    try {
+        const res = await fetch('{{ url_for("get_worker_password") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ worker_id: activeWorkerId, admin_password: adminPass })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            verifiedAdminPassword = adminPass;
+            document.getElementById('revealedPassword').innerText = data.password;
+            document.getElementById('stepVerification').style.display = 'none';
+            document.getElementById('stepPasswordDetails').style.display = 'block';
+            document.getElementById('modalAlert').style.display = 'none';
+        } else {
+            showModalAlert(data.error || 'Verification failed.', false);
+        }
+    } catch (err) {
+        showModalAlert('Error: ' + err.message, false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Verify & View Password';
+    }
+}
+
+async function saveNewPassword() {
+    const newPass = document.getElementById('newWorkerPasswordInput').value.trim();
+    if (!newPass) {
+        showModalAlert('Please enter a new password.', false);
+        return;
+    }
+    if (newPass.length < 4) {
+        showModalAlert('Password must be at least 4 characters long.', false);
+        return;
+    }
+
+    const btn = document.getElementById('savePassBtn');
+    btn.disabled = true;
+    btn.innerText = 'Saving...';
+
+    try {
+        const res = await fetch('{{ url_for("update_worker_password") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                worker_id: activeWorkerId,
+                admin_password: verifiedAdminPassword,
+                new_password: newPass
+            })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            document.getElementById('revealedPassword').innerText = newPass;
+            document.getElementById('newWorkerPasswordInput').value = '';
+            showModalAlert('✅ Password changed successfully!', true);
+        } else {
+            showModalAlert(data.error || 'Failed to update password.', false);
+        }
+    } catch (err) {
+        showModalAlert('Error: ' + err.message, false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save New Password';
+    }
+}
+
+function showModalAlert(msg, isSuccess) {
+    const el = document.getElementById('modalAlert');
+    el.innerText = msg;
+    el.style.display = 'block';
+    if (isSuccess) {
+        el.style.background = '#f0fdf4';
+        el.style.color = '#15803d';
+        el.style.border = '1px solid #bbf7d0';
+    } else {
+        el.style.background = '#fef2f2';
+        el.style.color = '#b91c1c';
+        el.style.border = '1px solid #fecaca';
+    }
+}
+
+let activeRemoveWorkerId = null;
+
+function openRemoveWorkerModal(workerId, username) {
+    activeRemoveWorkerId = workerId;
+    document.getElementById('removeModalWorkerSubtitle').innerText = 'Worker: ' + username;
+    document.getElementById('workerPasswordConfirmInput').value = '';
+    document.getElementById('removeModalAlert').style.display = 'none';
+    document.getElementById('removeWorkerModal').style.display = 'flex';
+    document.getElementById('workerPasswordConfirmInput').focus();
+}
+
+function closeRemoveWorkerModal() {
+    document.getElementById('removeWorkerModal').style.display = 'none';
+    activeRemoveWorkerId = null;
+}
+
+async function confirmRemoveWorker() {
+    const workerPass = document.getElementById('workerPasswordConfirmInput').value.trim();
+    if (!workerPass) {
+        showRemoveModalAlert('Please enter the worker password.', false);
+        return;
+    }
+
+    const btn = document.getElementById('confirmRemoveBtn');
+    btn.disabled = true;
+    btn.innerText = 'Verifying & Removing...';
+
+    try {
+        const res = await fetch('{{ url_for("remove_worker") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                worker_id: activeRemoveWorkerId,
+                worker_password: workerPass
+            })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            showRemoveModalAlert('✅ ' + data.message, true);
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showRemoveModalAlert(data.error || 'Failed to remove worker.', false);
+        }
+    } catch (err) {
+        showRemoveModalAlert('Error: ' + err.message, false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Confirm & Remove';
+    }
+}
+
+function showRemoveModalAlert(msg, isSuccess) {
+    const el = document.getElementById('removeModalAlert');
+    el.innerText = msg;
+    el.style.display = 'block';
+    if (isSuccess) {
+        el.style.background = '#f0fdf4';
+        el.style.color = '#15803d';
+        el.style.border = '1px solid #bbf7d0';
+    } else {
+        el.style.background = '#fef2f2';
+        el.style.color = '#b91c1c';
+        el.style.border = '1px solid #fecaca';
+    }
+}
+</script>
+{% endblock %}

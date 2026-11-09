@@ -1,0 +1,15 @@
+========================================
+      TEST LOT
+      Location: Main St
+========================================
+ Slip Type   : PARKING ENTRY RECEIPT
+ Ticket ID   : T0002
+ Vehicle No  : DL01CD5678
+ Owner Name  : Suresh
+ Vehicle Type: BIKE
+ Slot Number : B-01
+ Entry Time  : 2026-11-09 19:57:41
+ Rate        : INR 15.00/hour
+----------------------------------------
+   Thank you! Have a safe journey.
+========================================
