@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: smart-parking-lot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: SMART_PARKING_USE_MYSQL
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
