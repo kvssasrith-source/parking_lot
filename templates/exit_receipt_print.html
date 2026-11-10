@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt - {{ receipt.ticket_id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #f1f5f9;
+            font-family: 'Courier Prime', monospace;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .actions-bar {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-print { background: #2563eb; color: white; }
+        .btn-download { background: #16a34a; color: white; }
+        .receipt-box {
+            background: white;
+            width: 380px;
+            padding: 2rem 1.8rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px dashed #cbd5e1;
+            color: #0f172a;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 1.5px dashed #64748b;
+            padding-bottom: 1rem;
+            margin-bottom: 1.2rem;
+        }
+        .header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .header p {
+            font-size: 0.85rem;
+            color: #475569;
+            margin-top: 0.2rem;
+        }
+        .badge-type {
+            display: inline-block;
+            background: #16a34a;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            margin-top: 0.6rem;
+            letter-spacing: 1px;
+        }
+        .paid-box {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 0.75rem;
+            background: #f0fdf4;
+            border: 2px solid #16a34a;
+            border-radius: 6px;
+        }
+        .paid-box .label {
+            font-size: 0.75rem;
+            color: #166534;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .paid-box .amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #15803d;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.88rem;
+            border-bottom: 1px dotted #e2e8f0;
+        }
+        .row-label { color: #64748b; }
+        .row-val { font-weight: 700; color: #0f172a; }
+        .footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            border-top: 1.5px dashed #64748b;
+            padding-top: 1rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .actions-bar { display: none; }
+            .receipt-box { box-shadow: none; border: none; width: 100%; max-width: 340px; margin: 0 auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="actions-bar">
+        <button class="btn btn-print" onclick="window.print()">🖨️ Print Receipt</button>
+        <a href="{{ url_for('exit_receipt', ticket_id=receipt.ticket_id, download=1) }}" class="btn btn-download">📥 Download TXT Receipt</a>
+    </div>
+
+    <div class="receipt-box">
+        <div class="header">
+            <h1>🅿️ {{ receipt.lot_name }}</h1>
+            <p>{{ receipt.location }}</p>
+            <div class="badge-type">PAYMENT &amp; EXIT RECEIPT</div>
+        </div>
+
+        <div class="paid-box">
+            <div class="label">Amount Paid</div>
+            <div class="amount">₹{{ receipt.paid_amount or receipt.total_fee }}</div>
+            <div style="font-size: 0.8rem; color: #166534; font-weight: 600;">Method: {{ receipt.payment_method or 'CASH' }}</div>
+        </div>
+
+        <div class="row">
+            <span class="row-label">Ticket ID:</span>
+            <span class="row-val">{{ receipt.ticket_id }}</span>
+        </div>
+        <div class="row">
+            <span class="row-label">Vehicle No:</span>
+            <span class="row-val">{{ receipt.vehicle_number }}</span>
+        </div>
+        <div class="row">
+            <span class="row-label">Vehicle Type:</span>
+            <span class="row-val">{{ receipt.vehicle_type }}</span>
+        </div>
+        <div class="row">
+            <span class="row-label">Owner Name:</span>
+            <span class="row-val">{{ receipt.owner_name }}</span>
+        </div>
+        <div class="row">
+            <span class="row-label">Slot Released:</span>
+            <span class="row-val">{{ receipt.slot_number }}</span>
+        </div>
+        <div class="row">
+            <span class="row-label">Entry Time:</span>
+            <span class="row-val" style="font-size: 0.8rem;">{{ receipt.entry_time }}</span>
+        </div>
+        <div class="row">
+            <span class="row-label">Exit Time:</span>
+            <span class="row-val" style="font-size: 0.8rem;">{{ receipt.exit_time }}</span>
+        </div>
+        <div class="row">
+            <span class="row-label">Duration:</span>
+            <span class="row-val">{{ receipt.chargeable_duration }} hour(s)</span>
+        </div>
+        <div class="row">
+            <span class="row-label">Attendant:</span>
+            <span class="row-val">{{ receipt.attendant_name or 'Staff' }}</span>
+        </div>
+
+        <div class="footer">
+            <p style="font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem;">Thank You! Visit Again.</p>
+            <p>Smart Parking Lot Management System</p>
+        </div>
+    </div>
+
+</body>
+</html>
+

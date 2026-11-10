@@ -1,0 +1,18 @@
+========================================
+      TEST LOT
+      Location: Main St
+========================================
+ Slip Type   : PARKING EXIT RECEIPT
+ Ticket ID   : T0001
+ Vehicle No  : MH12AB1234
+ Owner Name  : Ramesh
+ Vehicle Type: CAR
+ Slot Number : C-01
+ Entry Time  : 2026-11-09 19:57:41
+ Exit Time   : 2026-11-09 19:57:41
+ Duration    : 1 hour(s)
+ Total Paid  : INR 30.00
+ Payment Via : UPI
+----------------------------------------
+   Thank you! Have a safe journey.
+========================================

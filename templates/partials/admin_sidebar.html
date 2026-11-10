@@ -1,0 +1,32 @@
+<!-- Reusable sidebar partial for admin pages -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <h2>🅿️ SMART PARKING</h2>
+        <p class="user-info">Admin: {{ session.full_name }}</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+            <span class="icon">📊</span><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('parking_setup') }}" class="{% if request.endpoint == 'parking_setup' %}active{% endif %}">
+            <span class="icon">⚙️</span><span>Parking Setup</span>
+        </a>
+        <a href="{{ url_for('slot_management') }}" class="{% if request.endpoint == 'slot_management' %}active{% endif %}">
+            <span class="icon">🅿️</span><span>Slot Management</span>
+        </a>
+        <a href="{{ url_for('manage_workers') }}" class="{% if request.endpoint == 'manage_workers' %}active{% endif %}">
+            <span class="icon">👷</span><span>Workers</span>
+        </a>
+        <a href="{{ url_for('parking_history') }}" class="{% if request.endpoint == 'parking_history' %}active{% endif %}">
+            <span class="icon">📋</span><span>Parking History</span>
+        </a>
+        <a href="{{ url_for('reports') }}" class="{% if request.endpoint == 'reports' %}active{% endif %}">
+            <span class="icon">📈</span><span>Reports</span>
+        </a>
+        <div class="divider"></div>
+        <a href="{{ url_for('logout') }}">
+            <span class="icon">🚪</span><span>Logout</span>
+        </a>
+    </nav>
+</aside>
+

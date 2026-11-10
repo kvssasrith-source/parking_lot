@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Slot Management – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="layout">
+    {% include "partials/admin_sidebar.html" %}
+
+    <main class="main-content">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1>Parking Slots</h1>
+                <p>View and manage all slots for <strong>{{ lot.lot_name }}</strong> ({{ lot.location }})</p>
+            </div>
+            <div>
+                <a href="{{ url_for('parking_setup') }}" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                    ⚙️ Modify Slot Capacities
+                </a>
+            </div>
+        </div>
+
+        <!-- Facility Info Banner -->
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 0.9rem 1.4rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <strong style="color: #1e40af;">Facility:</strong>
+                <span style="font-weight: 700; color: #1e3a8a;">{{ lot.lot_name }}</span>
+                <span style="color: var(--slate-600); font-size: 0.9rem;">— {{ lot.location }}</span>
+            </div>
+            <div style="display: flex; gap: 1.2rem; font-size: 0.9rem;">
+                <span style="color: var(--blue-700); font-weight: 600;">🚗 Cars: {{ lot.car_capacity }} Slots</span>
+                <span style="color: var(--green-700); font-weight: 600;">🏍️ Bikes: {{ lot.bike_capacity }} Slots</span>
+                <span style="color: var(--slate-700); font-weight: 700;">Total: {{ slots|length }} Slots</span>
+            </div>
+        </div>
+
+        <!-- Visual Slot Grid -->
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Slot Overview</span>
+                <div style="display: flex; gap: 1rem; font-size: 0.8rem; font-weight: 500;">
+                    <span style="display: flex; align-items: center; gap: 0.3rem;"><span style="width: 10px; height: 10px; background: #86efac; border-radius: 2px;"></span> Available</span>
+                    <span style="display: flex; align-items: center; gap: 0.3rem;"><span style="width: 10px; height: 10px; background: #fca5a5; border-radius: 2px;"></span> Occupied</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="slot-grid">
+                    {% for slot in slots %}
+                    <div class="slot-cell {% if not slot.is_active %}inactive{% elif slot.occupancy_status == 'OCCUPIED' %}occupied{% else %}available{% endif %}">
+                        {{ slot.slot_number }}
+                        <span class="slot-label">{{ slot.slot_type }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if not slots %}
+                <p style="color: var(--slate-500); text-align:center; padding:2rem;">
+                    No parking slots configured yet. Click <a href="{{ url_for('parking_setup') }}" style="color: var(--blue-600); font-weight: 600;">Modify Slot Capacities</a> to set your car and bike slots.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Table view -->
+        {% if slots %}
+        <div class="card">
+            <div class="card-header">Slot Details Table</div>
+            <div class="card-body">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Slot Number</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Active</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for slot in slots %}
+                            <tr>
+                                <td><strong>{{ slot.slot_number }}</strong></td>
+                                <td>{{ slot.slot_type }}</td>
+                                <td>
+                                    <span class="badge {% if slot.occupancy_status == 'OCCUPIED' %}badge-occupied{% else %}badge-available{% endif %}">
+                                        {{ slot.occupancy_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if slot.is_active %}badge-yes{% else %}badge-no{% endif %}">
+                                        {% if slot.is_active %}Yes{% else %}No{% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

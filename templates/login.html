@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Login – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="login-page">
+    <div class="login-left">
+        <div class="icon-car">🅿️</div>
+        <h1>SMART PARKING</h1>
+        <p class="subtitle">Lot Management System</p>
+        <p class="tagline">Secure access for admin and attendants</p>
+    </div>
+
+    <div class="login-right">
+        <div class="login-box">
+            <h2>Welcome back</h2>
+            <p class="hint">Sign in to continue</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" autofocus required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Login</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 1.2rem; font-size: 0.9rem; color: var(--slate-600);">
+                Don't have an account? <a href="{{ url_for('register') }}" style="color: var(--blue-600); font-weight: 700;">Register here</a>
+            </p>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

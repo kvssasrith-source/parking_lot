@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Register – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="login-page">
+    <div class="login-left">
+        <div class="icon-car">🅿️</div>
+        <h1>SMART PARKING</h1>
+        <p class="subtitle">Lot Management System</p>
+        <p class="tagline">Create an account to access the system</p>
+    </div>
+
+    <div class="login-right">
+        <div class="login-box" style="max-width: 420px;">
+            <h2>Create an Account</h2>
+            <p class="hint">Register as an attendant or administrator</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" placeholder="e.g. John Doe" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Choose a username" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role">
+                        <option value="WORKER" selected>Worker / Parking Attendant</option>
+                        <option value="ADMIN">System Administrator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Create a password (min 4 chars)" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 0.8rem;">Register</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--slate-600);">
+                Already have an account? <a href="{{ url_for('login') }}" style="color: var(--blue-600); font-weight: 700;">Sign in here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

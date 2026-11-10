@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Reports – Smart Parking{% endblock %}
+
+{% block body %}
+<div class="layout">
+    {% include "partials/admin_sidebar.html" %}
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Reports & Analytics</h1>
+            <p>Financial performance and facility occupancy statistics</p>
+        </div>
+
+        <div class="report-grid">
+            <!-- Revenue Summary -->
+            <div class="card">
+                <div class="card-header">Revenue Performance</div>
+                <div class="card-body">
+                    <div class="report-section">
+                        <div class="report-row">
+                            <span class="report-label">Today's Revenue</span>
+                            <span class="report-value">₹{{ revenue.today }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Weekly Revenue (7 Days)</span>
+                            <span class="report-value">₹{{ revenue.week }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Monthly Revenue (30 Days)</span>
+                            <span class="report-value">₹{{ revenue.month }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Successful Transactions</span>
+                            <span class="report-value">{{ revenue.successful_transactions }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method Breakdown -->
+            <div class="card">
+                <div class="card-header">Payment Mode Breakdown</div>
+                <div class="card-body">
+                    <div class="report-section">
+                        <div class="report-row">
+                            <span class="report-label">Cash Payments</span>
+                            <span class="report-value">₹{{ breakdown.cash }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">UPI Payments</span>
+                            <span class="report-value">₹{{ breakdown.upi }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Card Payments</span>
+                            <span class="report-value">₹{{ breakdown.card }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupancy Summary -->
+            <div class="card">
+                <div class="card-header">Occupancy Status</div>
+                <div class="card-body">
+                    <div class="report-section">
+                        <div class="report-row">
+                            <span class="report-label">Total Slots</span>
+                            <span class="report-value">{{ occupancy.total_slots }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Occupied Slots</span>
+                            <span class="report-value">{{ occupancy.occupied_slots }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Available Slots</span>
+                            <span class="report-value">{{ occupancy.available_slots }}</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Car Occupancy Rate</span>
+                            <span class="report-value">{{ occupancy.car_occupancy }}%</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Bike Occupancy Rate</span>
+                            <span class="report-value">{{ occupancy.bike_occupancy }}%</span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-label">Overall Occupancy Rate</span>
+                            <span class="report-value">{{ occupancy.overall_occupancy }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
